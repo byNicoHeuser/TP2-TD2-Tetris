@@ -109,7 +109,19 @@ char* strDuplicate(char* src) {
 int strCompare(char* s1, char* s2) {
     // TODO: Devolver 0 si son iguales, 1 si s1 < s2, -1 si s1 > s2.
     //       Ojo: es la convencion INVERSA a strcmp.
-    return 0;
+
+    int i = 0;
+    //si el char es no es el ultimo en ninguno de los dos, compara cual es mayor/menor.
+    while (s1[i] != '\0' && s2[i] != '\0'){
+        if (s1[i] < s2[i]) return 1;
+        if (s1[i] > s2[i]) return -1;
+        i++;
+    }
+    //Despues, si ambos ya estan en el ultimo char significa que son iguales, return 0.
+    if (s1[i] == '\0' && s2[i] == '\0') return 0;
+    // si solo s1 llego al ultimo char, return 1. Sino por descarte ya hace return -1 (s1 > s2).
+    if (s1[i] == '\0') return 1;
+    return -1;
 }
 
 char* strConcatenate(char* src1, char* src2) {
