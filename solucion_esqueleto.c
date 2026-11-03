@@ -151,17 +151,15 @@ char* strConcatenate(char* src1, char* src2) {
 }
 
 // ========= EJERCICIO 2: FUNCIONES A IMPLEMENTAR (EL TP) =========
-void gameBoardDelete(GameBoard* board);
+
 GameBoard* gameBoardNew() {
-    // TODO: Reservar memoria para el GameBoard.
-    // TODO: Usar un bucle para hacer malloc de las 20 filas (RowNode) y conectarlas.
-    // TODO: El puntero first_row debe apuntar al primero de esos nodos.
-    // TODO: Inicializar queue_head, queue_tail y first_particle en NULL.
+    // Reservamos memoria para la estructura principal del tablero.
     GameBoard* res = malloc(sizeof(GameBoard));
     if (res == NULL) {
         return NULL;
     }
 
+    // Inicializamos las listas vacías y los valores iniciales del juego.
     res->first_row = NULL;
     res->queue_head = NULL;
     res->queue_tail = NULL;
@@ -170,41 +168,72 @@ GameBoard* gameBoardNew() {
     res->score = 0;
     res->tick_timer = 0;
 
+    // "ultimo" permite conectar cada fila nueva al final de la lista.
     RowNode* ultimo = NULL;
  
+    // Creamos las filas del tablero una por una.
     for (int i = 0; i < GRID_ROWS; i++){
         RowNode* nuevaFila = malloc(sizeof(RowNode));
         if (nuevaFila == NULL){
+            // Si falla una reserva, borramos lo creado hasta ahora.
             gameBoardDelete(res);
             return NULL;
         }
+        // Las celdas empiezan vacías.
         for (int c = 0; c < GRID_COLS; c++) {
             nuevaFila->cells[c] = 0;
         } 
         nuevaFila->next = NULL;
         if (res->first_row == NULL){
+            // La primera fila pasa a ser el inicio de la lista.
             res->first_row = nuevaFila;
         }
         else {
+            // Las siguientes filas se enlazan después de la última.
             ultimo->next = nuevaFila;
         }
         ultimo = nuevaFila;
     }
+    // Devolvemos el tablero ya inicializado.
     return res;
 }
 
 void gameBoardDelete(GameBoard* board) {
-    // TODO: Debe tolerar board == NULL.
-    // TODO: Recorrer y liberar todos los RowNode con free().
-    // TODO: Recorrer y liberar todos los PieceQueueNode.
-    // TODO: Recorrer y liberar todos los ParticleNode.
-    // TODO: Finalmente, liberar la estructura GameBoard.
+    // Si no hay tablero, no hay nada que liberar.
     if (board == NULL){
         return;
     }
+
+    // Guardamos el siguiente nodo antes de liberar la fila actual.
+    RowNode* siguiente = NULL;
+    while (board->first_row != NULL){
+        siguiente = board->first_row->next;
+        free(board->first_row);
+        board->first_row = siguiente;
+    }
+
+    // Liberamos los nodos de la cola desde el primero.
+    PieceQueueNode* siguiente_pieza = NULL;
+    while (board->queue_head != NULL) {
+        siguiente_pieza = board->queue_head->next;
+        free(board->queue_head);
+        board->queue_head = siguiente_pieza;
+    }
+    // La cola ya quedó vacía.
+    board->queue_tail = NULL;
+
+    // Liberamos todas las partículas de la lista.
+    ParticleNode* siguiente_particula = NULL;
+    while (board->first_particle != NULL) {
+        siguiente_particula = board->first_particle->next;
+        free(board->first_particle);
+        board->first_particle = siguiente_particula;
+    }
+
+    // Liberamos la estructura que contiene las listas.
+    free(board);
+
 }
-
-
 
 void gameBoardAddParticle(GameBoard* board, float x, float y, int color) {
     if (board == NULL) return;
