@@ -211,6 +211,9 @@ int gameBoardDequeuePiece(GameBoard* board, int* out_type) {
     // TODO: Si la cola está vacía, retornar 0.
     // TODO: Extraer el primer nodo (queue_head).
     // TODO: Guardar el type en la variable out_type, liberar el nodo y actualizar el head.
+    board->head->out_type = board->head->next->out_type;
+    board->head = board->head->next;
+
     printf("Función gameBoardDequeuePiece no implementada.\n");
     return 0;
 }
