@@ -231,11 +231,13 @@ int gameBoardDequeuePiece(GameBoard* board, int* out_type) {
     // TODO: Si la cola está vacía, retornar 0.
     // TODO: Extraer el primer nodo (queue_head).
     // TODO: Guardar el type en la variable out_type, liberar el nodo y actualizar el head.
-    board->head->out_type = board->head->next->out_type;
-    board->head = board->head->next;
-
-    printf("Función gameBoardDequeuePiece no implementada.\n");
-    return 0;
+    if (board->queue_head == NULL) return 0;
+    *out_type = board->queue_head->type;
+    PieceQueueNode* node = board->queue_head;
+    board->queue_head = board->queue_head->next;
+    free(node);
+    if (board->queue_head == NULL) board->queue_tail = NULL;
+    return 1;
 }
 
 // ========= LOGICA DE DIBUJADO Y COLISIONES (NO MODIFICAR) =========
