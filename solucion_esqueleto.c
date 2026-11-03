@@ -148,7 +148,19 @@ int gameBoardCheckAndClearLines(GameBoard* board) {
 void gameBoardEnqueuePiece(GameBoard* board, int type) {
     // TODO: Crear un PieceQueueNode con el 'type'.
     // TODO: Insertarlo al final de la cola (queue_tail) y actualizar punteros.
-    printf("Función gameBoardEnqueuePiece no implementada.\n");
+    PieceQueueNode* node = malloc(sizeof(PieceQueueNode));
+    if (node == NULL) return;
+    node->type = type;
+    node->next = NULL;
+    if (board->queue_tail == NULL){
+        board->queue_tail = node;
+        board->queue_head = node;
+    }else {
+        board->queue_tail->next = node;
+        board->queue_tail = node;
+    }
+
+    printf("Función gameBoardEnqueuePiece implementada (; \n");
 }
 
 int gameBoardDequeuePiece(GameBoard* board, int* out_type) {
