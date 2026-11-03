@@ -283,6 +283,8 @@ int gameBoardCheckAndClearLines(GameBoard* board) {
 void gameBoardEnqueuePiece(GameBoard* board, int type) {
     // TODO: Crear un PieceQueueNode con el 'type'.
     // TODO: Insertarlo al final de la cola (queue_tail) y actualizar punteros.
+
+    // Reservo la memoria para el nuevo nodo
     PieceQueueNode* node = malloc(sizeof(PieceQueueNode));
     if (node == NULL) return;
     node->type = type;
@@ -302,6 +304,7 @@ int gameBoardDequeuePiece(GameBoard* board, int* out_type) {
     // TODO: Guardar el type en la variable out_type, liberar el nodo y actualizar el head.
     if (board->queue_head == NULL) return 0;
     *out_type = board->queue_head->type;
+    // Guardo un puntero al head actual para poder liberarlo despues de mover queue_head
     PieceQueueNode* node = board->queue_head;
     board->queue_head = board->queue_head->next;
     free(node);
@@ -476,6 +479,30 @@ int inicializar() {
 void correrTests() {
     // TODO: Implementar los casos minimos del enunciado. Por ejemplo:
     //  - strDuplicate: "", "x", un string con distintos caracteres.
+    char* copia1 = strDuplicate("");
+    if (strCompare(copia1, "") == 0) {
+        printf("strDuplicate \"\" OK \n");
+    }else{
+        printf("strDuplicate \"\" FALLA \n");
+    }
+    free(copia1);
+
+    char* copia2 = strDuplicate("x");
+    if (strCompare(copia2, "x") == 0) {
+        printf("strDuplicate \"x\" OK \n");
+    }else{
+        printf("strDuplicate \"x\" FALLA \n");
+    }
+    free(copia2);
+
+    char* copia3 = strDuplicate("ankara messi");
+    if (strCompare(copia3, "ankara messi") == 0) {
+        printf("strDuplicate \"ankara messi\" OK \n");
+    }else{
+        printf("strDuplicate \"ankara messi\" FALLA \n");
+    }
+    free(copia3);
+    
     //  - strCompare: "" vs "", "a" vs "a", y una desigualdad en ambos sentidos (s1/s2 y s2/s1).
     //  - strConcatenate: "" + "abc" y "hola " + "mundo". Los argumentos deben crearse con
     //    strDuplicate, porque strConcatenate los libera (no pasar literales).
@@ -485,7 +512,7 @@ void correrTests() {
     //    gameBoardCheckAndClearLines y comprobar que first_row es la fila nueva vacia y que
     //    la lista sigue teniendo 20 filas.
     // Liberar toda la memoria pedida en los tests (strings y tableros).
-    printf("Tests no implementados.\n");
+
 }
 
 // Compara contra "--test" sin depender de string.h ni del Ejercicio 1.
