@@ -195,20 +195,77 @@ void gameBoardDelete(GameBoard* board) {
 
 
 void gameBoardAddParticle(GameBoard* board, float x, float y, int color) {
-    // TODO: Crear un ParticleNode con memoria dinámica.
-    // TODO: Inicializar x, y, velocidades aleatorias y un life_timer.
-    // TODO: Agregarlo al principio de la lista enlazada simple de partículas.
-    printf("Función gameBoardAddParticle no implementada.\n");
+    if (board == NULL) return;
+
+    ParticleNode* nueva = malloc(sizeof(ParticleNode));
+    if (nueva == NULL) return;
+
+    nueva->x = x;
+    nueva->y = y;
+    nueva->vel_x = ((rand() % 100) / 10.0f) - 5.0f;
+    nueva->vel_y = ((rand() % 50) / -10.0f) - 2.0f;
+    nueva->color = color;
+    nueva->life_timer = 30 + (rand() % 30);
+
+    // La nueva particula apunta a la cabeza anterior y pasa a ser la cabeza.
+    nueva->next = board->first_particle;
+    board->first_particle = nueva;
 }
 
 int gameBoardCheckAndClearLines(GameBoard* board) {
-    // TODO: Recorrer la lista de RowNode.
-    // TODO: Si un RowNode tiene todas sus celdas > 0, desenlazarlo y hacer free().
-    // TODO: Crear un nuevo RowNode vacío (lleno de ceros).
-    // TODO: Insertar el nuevo RowNode en la CABEZA del tablero (board->first_row).
-    // TODO: Por cada celda destruida, invocar a gameBoardAddParticle().
-    printf("Función gameBoardCheckAndClearLines no implementada.\n");
-    return 0;
+    if (board == NULL) return 0;
+
+    RowNode* actual = board->first_row;
+    RowNode* anterior = NULL;
+    int fila = 0;
+    int eliminadas = 0;
+
+    while (actual != NULL) {
+        int completa = 1;
+        for (int c = 0; c < GRID_COLS; c++) {
+            if (actual->cells[c] == 0) {
+                completa = 0;
+                break;
+            }
+        }
+
+        if (completa) {
+            // Reservo el reemplazo antes de borrar para conservar las 20 filas
+            // incluso si no hay memoria disponible.
+            RowNode* nueva = malloc(sizeof(RowNode));
+            if (nueva == NULL) return eliminadas;
+            for (int c = 0; c < GRID_COLS; c++) nueva->cells[c] = 0;
+
+            for (int c = 0; c < GRID_COLS; c++) {
+                gameBoardAddParticle(board,
+                    (float)(OFFSET_X + c * CELL_SIZE + CELL_SIZE / 2),
+                    (float)(OFFSET_Y + fila * CELL_SIZE + CELL_SIZE / 2),
+                    actual->cells[c]);
+            }
+
+            RowNode* siguiente = actual->next;
+            if (anterior == NULL) {
+                board->first_row = siguiente;
+            } else {
+                anterior->next = siguiente;
+            }
+            free(actual);
+
+            nueva->next = board->first_row;
+            board->first_row = nueva;
+
+            // Si borre la cabeza, la fila nueva es la anterior a siguiente.
+            // Esto permite borrar tambien varias filas completas al inicio.
+            if (anterior == NULL) anterior = nueva;
+            actual = siguiente;
+            eliminadas++;
+        } else {
+            anterior = actual;
+            actual = actual->next;
+        }
+        fila++;
+    }
+    return eliminadas;
 }
 
 void gameBoardEnqueuePiece(GameBoard* board, int type) {
