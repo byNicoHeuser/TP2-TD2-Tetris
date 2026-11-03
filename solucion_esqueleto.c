@@ -119,7 +119,7 @@ char* strConcatenate(char* src1, char* src2) {
 }
 
 // ========= EJERCICIO 2: FUNCIONES A IMPLEMENTAR (EL TP) =========
-
+void gameBoardDelete(GameBoard* board);
 GameBoard* gameBoardNew() {
     // TODO: Reservar memoria para el GameBoard.
     // TODO: Usar un bucle para hacer malloc de las 20 filas (RowNode) y conectarlas.
@@ -170,8 +170,9 @@ void gameBoardDelete(GameBoard* board) {
     if (board == NULL){
         return;
     }
-    
 }
+
+
 
 void gameBoardAddParticle(GameBoard* board, float x, float y, int color) {
     // TODO: Crear un ParticleNode con memoria dinámica.
@@ -204,8 +205,6 @@ void gameBoardEnqueuePiece(GameBoard* board, int type) {
         board->queue_tail->next = node;
         board->queue_tail = node;
     }
-
-    printf("Función gameBoardEnqueuePiece implementada (; \n");
 }
 
 int gameBoardDequeuePiece(GameBoard* board, int* out_type) {
