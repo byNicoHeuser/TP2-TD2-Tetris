@@ -166,6 +166,10 @@ GameBoard* gameBoardNew() {
     res->queue_head = NULL;
     res->queue_tail = NULL;
     res->first_particle = NULL;
+    res->current_piece.col = 0;
+    res->current_piece.row = 0;
+    res->current_piece.type = 0;
+    res->current_piece.rotation = 0;
     res->current_piece.active = 0;
     res->score = 0;
     res->tick_timer = 0;
@@ -508,6 +512,8 @@ int inicializar() {
 // ========= TESTS (COMPLETAR) =========
 
 void correrTests() {
+    int fallas = 0;
+
     // TODO: Implementar los casos minimos del enunciado. Por ejemplo:
     //  - strDuplicate: "", "x", un string con distintos caracteres.
     char* copia1 = strDuplicate("");
@@ -515,6 +521,7 @@ void correrTests() {
         printf("strDuplicate \"\" OK \n");
     }else{
         printf("strDuplicate \"\" FALLA \n");
+        fallas++;
     }
     free(copia1);
 
@@ -523,6 +530,7 @@ void correrTests() {
         printf("strDuplicate \"x\" OK \n");
     }else{
         printf("strDuplicate \"x\" FALLA \n");
+        fallas++;
     }
     free(copia2);
 
@@ -531,11 +539,11 @@ void correrTests() {
         printf("strDuplicate \"ankara messi\" OK \n");
     }else{
         printf("strDuplicate \"ankara messi\" FALLA \n");
+        fallas++;
     }
     free(copia3);
     
     //  - strCompare: "" vs "", "a" vs "a", y una desigualdad en ambos sentidos (s1/s2 y s2/s1).
-    int fallas = 0;
 
     if (strCompare("", "") == 0) {
         printf("strCompare \"\", \"\" OK \n");
