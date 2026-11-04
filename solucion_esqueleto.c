@@ -152,6 +152,8 @@ char* strConcatenate(char* src1, char* src2) {
 
 // ========= EJERCICIO 2: FUNCIONES A IMPLEMENTAR (EL TP) =========
 
+void gameBoardDelete(GameBoard* board);
+
 GameBoard* gameBoardNew() {
     // Reservamos memoria para la estructura principal del tablero.
     GameBoard* res = malloc(sizeof(GameBoard));
@@ -533,14 +535,276 @@ void correrTests() {
     free(copia3);
     
     //  - strCompare: "" vs "", "a" vs "a", y una desigualdad en ambos sentidos (s1/s2 y s2/s1).
+    int fallas = 0;
+
+    if (strCompare("", "") == 0) {
+        printf("strCompare \"\", \"\" OK \n");
+    }else{
+        printf("strCompare \"\", \"\" FALLA \n");
+        fallas++;
+    }
+
+    if (strCompare("a", "a") == 0) {
+        printf("strCompare \"a\", \"a\" OK \n");
+    }else{
+        printf("strCompare \"a\", \"a\" FALLA \n");
+        fallas++;
+    }
+
+    if (strCompare("a", "b") == 1) {
+        printf("strCompare \"a\", \"b\" OK \n");
+    }else{
+        printf("strCompare \"a\", \"b\" FALLA \n");
+        fallas++;
+    }
+
+    if (strCompare("b", "a") == -1) {
+        printf("strCompare \"b\", \"a\" OK \n");
+    }else{
+        printf("strCompare \"b\", \"a\" FALLA \n");
+        fallas++;
+    }
+
+    if (strCompare("casa", "casas") == 1) {
+        printf("strCompare \"casa\", \"casas\" OK \n");
+    }else{
+        printf("strCompare \"casa\", \"casas\" FALLA \n");
+        fallas++;
+    }
+
+    if (strCompare("casas", "casa") == -1) {
+        printf("strCompare \"casas\", \"casa\" OK \n");
+    }else{
+        printf("strCompare \"casas\", \"casa\" FALLA \n");
+        fallas++;
+    }
+
     //  - strConcatenate: "" + "abc" y "hola " + "mundo". Los argumentos deben crearse con
     //    strDuplicate, porque strConcatenate los libera (no pasar literales).
+    char* izquierda[] = {"", "hola ", "abc", ""};
+    char* derecha[] = {"abc", "mundo", "", ""};
+    char* esperado[] = {"abc", "hola mundo", "abc", ""};
+    for (int i = 0; i < 4; i++) {
+        char* a = strDuplicate(izquierda[i]);
+        char* b = strDuplicate(derecha[i]);
+        char* resultado = NULL;
+        if (a != NULL && b != NULL) {
+            resultado = strConcatenate(a, b);
+        }else{
+            free(a);
+            free(b);
+        }
+        if (resultado != NULL && strCompare(resultado, esperado[i]) == 0) {
+            printf("strConcatenate \"%s\" + \"%s\" OK \n", izquierda[i], derecha[i]);
+        }else{
+            printf("strConcatenate \"%s\" + \"%s\" FALLA \n", izquierda[i], derecha[i]);
+            fallas++;
+        }
+        free(resultado);
+    }
+
     //  - Cola: 5 push y 6 pop; el 6to debe devolver 0 y dejar queue_head y queue_tail en NULL.
     //    Verificar tambien que un push posterior funcione.
+    GameBoard* board = gameBoardNew();
+    if (board == NULL) {
+        printf("gameBoardNew: FALLA (no se pudo crear el tablero)\n");
+        exit(EXIT_FAILURE);
+    }
+    if (board->queue_head == NULL && board->queue_tail == NULL && board->first_particle == NULL &&
+        board->score == 0 && board->tick_timer == 0 && board->current_piece.active == 0) {
+        printf("gameBoardNew - estado inicial: OK\n");
+    }else{
+        printf("gameBoardNew - estado inicial: FALLA\n");
+        fallas++;
+    }
+
+    RowNode* fila = board->first_row;
+    int cantidad = 0, vacias = 1;
+    while (fila != NULL && cantidad < GRID_ROWS) {
+        for (int c = 0; c < GRID_COLS; c++) {
+            if (fila->cells[c] != 0) vacias = 0;
+        }
+        cantidad++;
+        fila = fila->next;
+    }
+    if (cantidad == GRID_ROWS && fila == NULL && vacias) {
+        printf("gameBoardNew - 20 filas vacias: OK\n");
+    }else{
+        printf("gameBoardNew - 20 filas vacias: FALLA\n");
+        fallas++;
+    }
+
+    int tipos[] = {4, 1, 6, 0, 3};
+    for (int i = 0; i < 5; i++) gameBoardEnqueuePiece(board, tipos[i]);
+    if (board->queue_head != NULL && board->queue_tail != NULL && board->queue_head->type == tipos[0] &&
+        board->queue_tail->type == tipos[4] && board->queue_tail->next == NULL) {
+        printf("gameBoardEnqueuePiece - cabeza y final: OK\n");
+    }else{
+        printf("gameBoardEnqueuePiece - cabeza y final: FALLA\n");
+        fallas++;
+    }
+
+    for (int i = 0; i < 5; i++) {
+        int tipo = -1;
+        int saco = gameBoardDequeuePiece(board, &tipo);
+        if (saco == 1 && tipo == tipos[i]) {
+            printf("FIFO - extraccion %d: OK\n", i + 1);
+        }else{
+            printf("FIFO - extraccion %d: FALLA (esperaba %d, obtuvo %d)\n", i + 1, tipos[i], tipo);
+            fallas++;
+        }
+    }
+    if (board->queue_head == NULL && board->queue_tail == NULL) {
+        printf("Cola vacia al sacar la quinta: OK\n");
+    }else{
+        printf("Cola vacia al sacar la quinta: FALLA\n");
+        fallas++;
+    }
+
+    int tipo = 99;  // Valor conocido para detectar si la funcion lo pisa al fallar.
+    int saco = gameBoardDequeuePiece(board, &tipo);
+    if (saco == 0 && tipo == 99 && board->queue_head == NULL && board->queue_tail == NULL) {
+        printf("Sexta extraccion - no cambia la salida: OK\n");
+    }else{
+        printf("Sexta extraccion - no cambia la salida: FALLA\n");
+        fallas++;
+    }
+
+    gameBoardEnqueuePiece(board, 2);
+    saco = gameBoardDequeuePiece(board, &tipo);
+    if (saco == 1 && tipo == 2 && board->queue_head == NULL && board->queue_tail == NULL) {
+        printf("Reutilizar la cola vacia: OK\n");
+    }else{
+        printf("Reutilizar la cola vacia: FALLA\n");
+        fallas++;
+    }
+
+    // Agregamos dos particulas para ver cual queda en la cabeza.
+    gameBoardAddParticle(board, 10.5f, 20.5f, 3);
+    ParticleNode* primera = board->first_particle;
+    if (primera != NULL && primera->x == 10.5f && primera->y == 20.5f &&
+        primera->color == 3 && primera->next == NULL) {
+        printf("Primera particula: OK\n");
+    }else{
+        printf("Primera particula: FALLA\n");
+        fallas++;
+    }
+
+    gameBoardAddParticle(board, 35.5f, 7.5f, 6);
+    ParticleNode* cabeza = board->first_particle;
+    if (primera != NULL && cabeza != NULL && cabeza != primera && cabeza->next == primera &&
+        cabeza->x == 35.5f && cabeza->y == 7.5f && cabeza->color == 6) {
+        printf("Nueva particula en la cabeza: OK\n");
+    }else{
+        printf("Nueva particula en la cabeza: FALLA\n");
+        fallas++;
+    }
+
     //  - Tablero: llenar la fila de indice 19 (la de abajo), llamar a
     //    gameBoardCheckAndClearLines y comprobar que first_row es la fila nueva vacia y que
     //    la lista sigue teniendo 20 filas.
+    // Tambien probamos las filas 0 y 1 juntas, dos separadas y los extremos.
+    // En filaA y filaB, -1 significa que no se eligio una fila.
+    char* casos[] = {"ninguna completa", "ultima fila (19)", "filas 0 y 1", "filas 5 y 12", "todas las filas"};
+    int filaA[]   = {-1, 19, 0,  5, -1};
+    int filaB[]   = {-1, -1, 1, 12, -1};
+    int aBorrar[] = { 0,  1, 2,  2, GRID_ROWS};
+    for (int caso = 0; caso < 5; caso++) {
+        GameBoard* tableroFilas = gameBoardNew();
+        if (tableroFilas == NULL) {
+            printf("Preparar tablero (%s): FALLA\n", casos[caso]);
+            gameBoardDelete(board);
+            exit(EXIT_FAILURE);
+        }
+        int colores[GRID_ROWS];  // Marcas de las filas que deben sobrevivir, en orden.
+        int guardadas = 0;
+        fila = tableroFilas->first_row;
+        for (int r = 0; r < GRID_ROWS && fila != NULL; r++) {
+            int completa = r == filaA[caso] || r == filaB[caso] || aBorrar[caso] == GRID_ROWS;
+            int color = 1 + r % 7;
+            for (int c = 0; c < GRID_COLS; c++) {
+                if (completa) fila->cells[c] = 1 + c % 7;
+                else fila->cells[c] = color;
+            }
+            if (!completa) {
+                fila->cells[GRID_COLS - 1] = 0;  // Un solo hueco alcanza para no borrarla.
+                colores[guardadas++] = color;
+            }
+            fila = fila->next;
+        }
+
+        int borradas = gameBoardCheckAndClearLines(tableroFilas);
+        if (borradas == aBorrar[caso]) {
+            printf("Lineas (%s) - cantidad borrada: OK\n", casos[caso]);
+        }else{
+            printf("Lineas (%s) - FALLA: esperaba %d, borro %d\n", casos[caso], aBorrar[caso], borradas);
+            fallas++;
+        }
+
+        fila = tableroFilas->first_row;
+        int r = 0, tableroOk = 1;
+        while (r < GRID_ROWS && fila != NULL) {
+            for (int c = 0; c < GRID_COLS; c++) {
+                int valorEsperado = 0;  // Arriba deben aparecer las filas nuevas, vacias.
+                if (r >= aBorrar[caso] && c < GRID_COLS - 1) {
+                    int indice = r - aBorrar[caso];
+                    if (indice < guardadas) valorEsperado = colores[indice];
+                    else tableroOk = 0;
+                }
+                if (fila->cells[c] != valorEsperado) tableroOk = 0;
+            }
+            r++;
+            fila = fila->next;
+        }
+        if (tableroOk && r == GRID_ROWS && fila == NULL) {
+            printf("Lineas (%s) - 20 filas y contenido: OK\n", casos[caso]);
+        }else{
+            printf("Lineas (%s) - 20 filas y contenido: FALLA\n", casos[caso]);
+            fallas++;
+        }
+
+        ParticleNode* p = tableroFilas->first_particle;
+        int particulas = 0;
+        while (p != NULL && particulas < GRID_ROWS * GRID_COLS) {
+            particulas++;
+            p = p->next;
+        }
+        if (particulas == aBorrar[caso] * GRID_COLS && p == NULL) {
+            printf("Lineas (%s) - cantidad de particulas: OK\n", casos[caso]);
+        }else{
+            printf("Lineas (%s) - cantidad de particulas: FALLA\n", casos[caso]);
+            fallas++;
+        }
+
+        // En la fila 19 verificamos ademas que haya una particula en cada celda original.
+        if (caso == 1 && p == NULL) {
+            int posicionesOk = 1;
+            for (int c = 0; c < GRID_COLS; c++) {
+                int x = OFFSET_X + c * CELL_SIZE + CELL_SIZE / 2;
+                int y = OFFSET_Y + 19 * CELL_SIZE + CELL_SIZE / 2;
+                p = tableroFilas->first_particle;
+                while (p != NULL && !(p->x == x && p->y == y && p->color == 1 + c % 7)) p = p->next;
+                if (p == NULL) posicionesOk = 0;
+            }
+            if (posicionesOk) {
+                printf("Fila 19 - posicion y color de cada particula: OK\n");
+            }else{
+                printf("Fila 19 - posicion y color de cada particula: FALLA\n");
+                fallas++;
+            }
+        }
+        gameBoardDelete(tableroFilas);
+    }
+
     // Liberar toda la memoria pedida en los tests (strings y tableros).
+    // Quedan piezas y particulas para comprobar su liberacion con Valgrind.
+    gameBoardEnqueuePiece(board, 2);
+    gameBoardEnqueuePiece(board, 4);
+    gameBoardDelete(board);
+
+    if (fallas > 0) {
+        exit(EXIT_FAILURE);
+    }
 
 }
 
